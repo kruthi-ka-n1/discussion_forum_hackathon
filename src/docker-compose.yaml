@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  spring-angular-app:
+    image: spring-angular-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: postgresql://localhost:5432/forum_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  prometheus:
+    image: prom/prometheus:v2.30.3
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yaml
+
+  grafana:
+    image: grafana/grafana:8.0.6
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+networks:
+  default:
+    external:
+      name: bridge
